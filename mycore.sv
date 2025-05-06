@@ -277,7 +277,7 @@ wire HSync;
 wire VBlank;
 wire VSync;
 wire ce_pix;
-wire [7:0] video;
+wire [7:0] video_r, video_g, video_b;
 
 mycore mycore
 (
@@ -294,7 +294,9 @@ mycore mycore
 	.VBlank(VBlank),
 	.VSync(VSync),
 
-	.video(video)
+	.r(video_r),
+	.g(video_g),
+	.b(video_b)
 );
 
 assign CLK_VIDEO = clk_sys;
@@ -303,9 +305,9 @@ assign CE_PIXEL = ce_pix;
 assign VGA_DE = ~(HBlank | VBlank);
 assign VGA_HS = HSync;
 assign VGA_VS = VSync;
-assign VGA_G  = (!col || col == 2) ? video : 8'd0;
-assign VGA_R  = (!col || col == 1) ? video : 8'd0;
-assign VGA_B  = (!col || col == 3) ? video : 8'd0;
+assign VGA_G  = video_g;
+assign VGA_R  = video_r;
+assign VGA_B  = video_b;
 
 reg  [26:0] act_cnt;
 always @(posedge clk_sys) act_cnt <= act_cnt + 1'd1; 

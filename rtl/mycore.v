@@ -1,4 +1,3 @@
-
 module mycore
 (
 	input         clk,
@@ -14,18 +13,14 @@ module mycore
 	output reg    VBlank,
 	output reg    VSync,
 
-	output  [7:0] video
+	output  [7:0] r,
+	output  [7:0] g,
+	output  [7:0] b
 );
 
 reg   [9:0] hc;
 reg   [9:0] vc;
 reg   [9:0] vvc;
-reg  [63:0] rnd_reg;
-
-wire  [5:0] rnd_c = {rnd_reg[0],rnd_reg[1],rnd_reg[2],rnd_reg[2],rnd_reg[2],rnd_reg[2]};
-wire [63:0] rnd;
-
-lfsr random(rnd);
 
 always @(posedge clk) begin
 	if(scandouble) ce_pix <= 1;
@@ -47,8 +42,6 @@ always @(posedge clk) begin
 		end else begin
 			hc <= hc + 1'd1;
 		end
-
-		rnd_reg <= rnd;
 	end
 end
 
@@ -78,10 +71,18 @@ always @(posedge clk) begin
 	if (hc == 590) HSync <= 0;
 end
 
-reg  [7:0] cos_out;
-wire [5:0] cos_g = cos_out[7:3]+6'd32;
-cos cos(vvc + {vc>>scandouble, 2'b00}, cos_out);
+// Rainbow bar generation
+// Divide screen into 8 vertical bars
+wire [2:0] bar_index = hc[9:7]; // Using 3 bits to divide into 8 sections
 
-assign video = (cos_g >= rnd_c) ? {cos_g - rnd_c, 2'b00} : 8'd0;
+// Generate colorful rainbow pattern
+assign r = (!HBlank && !VBlank) ? (bar_index == 0 || bar_index == 1 || bar_index == 7) ? 8'hFF : 
+           (bar_index == 2 || bar_index == 6) ? 8'h80 : 8'h00 : 8'h00;
+           
+assign g = (!HBlank && !VBlank) ? (bar_index == 2 || bar_index == 3 || bar_index == 4) ? 8'hFF : 
+           (bar_index == 1 || bar_index == 5) ? 8'h80 : 8'h00 : 8'h00;
+           
+assign b = (!HBlank && !VBlank) ? (bar_index == 4 || bar_index == 5 || bar_index == 6) ? 8'hFF : 
+           (bar_index == 3 || bar_index == 7) ? 8'h80 : 8'h00 : 8'h00;
 
 endmodule
