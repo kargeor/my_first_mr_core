@@ -1,0 +1,22 @@
+name: Build Mr FPGA Image
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  synthesis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Run compilation flow
+        run: docker run --rm -v ${{ github.workspace }}:/build raetro/quartus:mister quartus_sh --flow compile mycore.qpf
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: OutputFiles.zip
+          path: output_files/
